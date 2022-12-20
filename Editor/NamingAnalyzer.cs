@@ -79,7 +79,7 @@ namespace UnityExtras.Naming.Editor
                                             {
                                                 asset = AssetDatabase.LoadMainAssetAtPath(assetPath);
                                             }
-                                            Debug.LogError($"{asset} conflicts with the {assetType.FullName} rule. Go under Edit > Project Settings > Naming Analyzer to check this rules pattern.", asset);
+                                            Debug.LogError($"Incorrect Naming Detected on {asset}! Please apply the right naming rules when naming your assets. Conflicts with rule ({assetType.FullName})", asset);
                                         }
                                     }
 
