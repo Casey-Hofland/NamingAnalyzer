@@ -11,12 +11,6 @@ Right now the error message just tells you that a string is wrong, but it doesn'
 
 ---
 
-**RENAME TO NamingValidator**
-
-It's just a better name for this package.
-
----
-
 **Found in Edit > Project Settings > Naming Analyzer**
 - Directory Wildcards (e.g. **/Prototype).
 - Drag & Drop on the Exclude from Naming Analyzers list.
