@@ -40,56 +40,52 @@ namespace UnityExtras.Naming.Editor
 
                 void EnumerateDirectoriesRecursive(string path)
                 {
-                    try
+                    if (!Directory.Exists(path))
                     {
-                        foreach (var directory in Directory.EnumerateDirectories(path))
+                        return;
+                    }
+
+                    foreach (var directory in Directory.EnumerateDirectories(path))
+                    {
+                        // If the directory is being analyzed by ANOTHER ruleset, skip validating this directory by THIS ruleset.
+                        if (namingValidators.FindIndex(0, i, namingValidator => namingValidator.directory == directory.Remove(0, Application.dataPath.Length + 1).Replace("\\", "/")) != -1)
                         {
-                            // If the directory is being analyzed by ANOTHER ruleset, skip validating this directory by THIS ruleset.
-                            if (namingValidators.FindIndex(0, i, namingValidator => namingValidator.directory == directory.Remove(0, Application.dataPath.Length + 1).Replace("\\", "/")) != -1)
+                            break;
+                        }
+
+                        EnumerateDirectoriesRecursive(directory);
+                    }
+
+                    foreach (var filePath in Directory.EnumerateFiles(path))
+                    {
+                        if (filePath.EndsWith(".meta"))
+                        {
+                            continue;
+                        }
+
+                        var assetPath = filePath.Remove(0, Application.dataPath.Length - "Assets".Length).Replace("\\", "/");
+                        if (excludePaths.Remove(assetPath))
+                        {
+                            continue;
+                        }
+
+                        var assetType = AssetDatabase.GetMainAssetTypeAtPath(assetPath);
+                        while (assetType != null)
+                        {
+                            if (namingRegexByAssetType.TryGetValue(assetType, out var namingRegex))
                             {
-                                break;
+                                var assetName = assetPath[(assetPath.LastIndexOf('/') + 1)..assetPath.LastIndexOf('.')];
+                                if (!namingRegex.IsMatch(assetName))
+                                {
+                                    var asset = AssetDatabase.LoadMainAssetAtPath(assetPath);
+                                    Debug.LogError($"Incorrect Naming Detected on {asset}! Please apply the right naming rules when naming your assets. Conflicts with rule ({assetType.FullName})", asset);
+                                    break;
+                                }
                             }
 
-                            EnumerateDirectoriesRecursive(directory);
-
-                            foreach (var filePath in Directory.EnumerateFiles(directory))
-                            {
-                                if (filePath.EndsWith(".meta"))
-                                {
-                                    continue;
-                                }
-
-                                var assetPath = filePath.Remove(0, Application.dataPath.Length - "Assets".Length).Replace("\\", "/");
-                                if (excludePaths.Remove(assetPath))
-                                {
-                                    continue;
-                                }
-
-                                var assetType = AssetDatabase.GetMainAssetTypeAtPath(assetPath);
-                                string? assetName = null;
-                                UnityEngine.Object? asset = null;
-                                while (assetType != null)
-                                {
-                                    if (namingRegexByAssetType.TryGetValue(assetType, out var namingRegex))
-                                    {
-                                        assetName ??= assetPath[(assetPath.LastIndexOf('/') + 1)..assetPath.LastIndexOf('.')];
-                                        if (!namingRegex.IsMatch(assetName))
-                                        {
-                                            if (asset == null)
-                                            {
-                                                asset = AssetDatabase.LoadMainAssetAtPath(assetPath);
-                                            }
-                                            Debug.LogError($"Incorrect Naming Detected on {asset}! Please apply the right naming rules when naming your assets. Conflicts with rule ({assetType.FullName})", asset);
-                                            break;
-                                        }
-                                    }
-
-                                    assetType = assetType.BaseType;
-                                }
-                            }
+                            assetType = assetType.BaseType;
                         }
                     }
-                    catch (DirectoryNotFoundException) { }
                 }
             }
         }
