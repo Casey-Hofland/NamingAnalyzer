@@ -10,7 +10,7 @@ namespace UnityExtras.Naming.Editor
     {
         private static string[] OnWillSaveAssets(string[] paths)
         {
-            NamingAnalyzer.AnalyzeProject();
+            NamingValidator.ValidateProject();
             return paths;
         }
     }
