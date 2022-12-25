@@ -1,19 +1,21 @@
 {
-  "name": "com.unityextras.naminganalyzer",
+  "name": "com.unityextras.namingvalidator",
   "version": "0.1.0-exp",
-  "displayName": "Naming Analyzer",
-  "description": "A naming analyzer for Unity to help ensuring naming conventions are respected.",
+  "displayName": "Naming Validator",
+  "description": "A naming validator for Unity to help ensure naming conventions are respected.",
   "dependencies": {
     "com.unity.settings-manager": "2.0.1"
   },
   "keywords": [
     "Naming",
-    "Analyzer",
+    "Validate",
+    "Validator",
+    "Valid",
     "Editor",
     "Project",
     "Manage"
   ],
-  "category": "Naming Analyzer",
+  "category": "Naming Validator",
   "author": {
     "name": "CaseyDeCoder",
     "email": "hofland.casey@gmail.com"
