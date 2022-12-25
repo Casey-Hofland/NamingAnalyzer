@@ -1,5 +1,5 @@
 {
-    "name": "UnityExtras.NamingAnalyzer.Editor",
+    "name": "UnityExtras.NamingValidator.Editor",
     "rootNamespace": "UnityExtras.Naming.Editor",
     "references": [
         "GUID:49818357e697641afb75d2f8acaf1861"
