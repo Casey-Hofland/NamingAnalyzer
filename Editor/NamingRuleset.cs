@@ -7,7 +7,7 @@ namespace UnityExtras.Naming.Editor
     [CreateAssetMenu(menuName = "Naming Ruleset")]
     public class NamingRuleset : ScriptableObject
     {
-        public static NamingRuleset emptyRuleset => AssetDatabase.LoadAssetAtPath<NamingRuleset>("Packages/com.unityextras.naminganalyzer/Editor/EmptyRuleset.asset");
+        public static NamingRuleset emptyRuleset => AssetDatabase.LoadAssetAtPath<NamingRuleset>("Packages/com.unityextras.namingvalidator/Editor/EmptyRuleset.asset");
 
         public List<NamingRule> namingRules;
     }

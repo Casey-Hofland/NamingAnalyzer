@@ -9,32 +9,32 @@ using UnityEngine;
 namespace UnityExtras.Naming.Editor
 {
     [Serializable]
-    public struct NamingAnalyzer
+    public struct NamingValidator
     {
         public NamingRuleset ruleset;
         public string directory;
 
-        public NamingAnalyzer(NamingRuleset ruleset, string directory)
+        public NamingValidator(NamingRuleset ruleset, string directory)
         {
             this.ruleset = ruleset;
             this.directory = directory;
         }
 
-        public static NamingAnalyzer CreateEmpty(string directory) => new(NamingRuleset.emptyRuleset, directory);
+        public static NamingValidator CreateEmpty(string directory) => new(NamingRuleset.emptyRuleset, directory);
 
-        public static void AnalyzeProject()
+        public static void ValidateProject()
         {
-            var namingAnalyzers = NamingAnalyzerSettings.namingAnalyzers.value;
-            var excludeFromNamingAnalyzers = NamingAnalyzerSettings.excludeFromNamingAnalyzers.value;
-            var excludePaths = excludeFromNamingAnalyzers.Select(excludeFromNamingAnalyzer => AssetDatabase.GetAssetPath(excludeFromNamingAnalyzer)).ToHashSet();
+            var namingValidators = NamingValidatorSettings.namingValidators.value;
+            var excludeFromNamingValidators = NamingValidatorSettings.excludeFromNamingValidators.value;
+            var excludePaths = excludeFromNamingValidators.Select(excludeFromNamingValidator => AssetDatabase.GetAssetPath(excludeFromNamingValidator)).ToHashSet();
 
-            namingAnalyzers = namingAnalyzers.OrderByDescending(namingAnalyzer => namingAnalyzer.directory).ToList();
-            for (int i = 0; i < namingAnalyzers.Count; i++)
+            namingValidators = namingValidators.OrderByDescending(namingValidator => namingValidator.directory).ToList();
+            for (int i = 0; i < namingValidators.Count; i++)
             {
-                var namingAnalyzer = namingAnalyzers[i];
-                var namingRegexByAssetType = namingAnalyzer.ruleset.namingRules.ToDictionary(namingRule => namingRule.assetType, namingRule => new Regex(namingRule.pattern));
+                var namingValidator = namingValidators[i];
+                var namingRegexByAssetType = namingValidator.ruleset.namingRules.ToDictionary(namingRule => namingRule.assetType, namingRule => new Regex(namingRule.pattern));
 
-                var path = Application.dataPath + (string.IsNullOrWhiteSpace(namingAnalyzer.directory) ? string.Empty : $"/{namingAnalyzer.directory}");
+                var path = Application.dataPath + (string.IsNullOrWhiteSpace(namingValidator.directory) ? string.Empty : $"/{namingValidator.directory}");
 
                 EnumerateDirectoriesRecursive(path);
 
@@ -44,8 +44,8 @@ namespace UnityExtras.Naming.Editor
                     {
                         foreach (var directory in Directory.EnumerateDirectories(path))
                         {
-                            // If the directory is being analyzed by ANOTHER ruleset, skip analyzing this directory by THIS ruleset.
-                            if (namingAnalyzers.FindIndex(0, i, namingAnalyzer => namingAnalyzer.directory == directory.Remove(0, Application.dataPath.Length + 1).Replace("\\", "/")) != -1)
+                            // If the directory is being analyzed by ANOTHER ruleset, skip validating this directory by THIS ruleset.
+                            if (namingValidators.FindIndex(0, i, namingValidator => namingValidator.directory == directory.Remove(0, Application.dataPath.Length + 1).Replace("\\", "/")) != -1)
                             {
                                 break;
                             }
