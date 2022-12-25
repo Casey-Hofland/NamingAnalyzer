@@ -58,7 +58,7 @@ namespace UnityExtras.Naming.Editor
 
                     foreach (var filePath in Directory.EnumerateFiles(path))
                     {
-                        if (filePath.EndsWith(".meta"))
+                        if (filePath.EndsWith(".meta") || filePath.EndsWith(".prefab"))
                         {
                             continue;
                         }
