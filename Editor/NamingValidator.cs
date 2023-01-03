@@ -45,6 +45,13 @@ namespace UnityExtras.Naming.Editor
                         return;
                     }
 
+                    var folderPath = path.Remove(0, Application.dataPath.Length - "Assets".Length).Replace("\\", "/");
+                    if (!ValidateType(typeof(DefaultAsset), folderPath))
+                    {
+                        var folder = AssetDatabase.LoadMainAssetAtPath(folderPath);
+                        Debug.LogError($"{folder} has incorrect naming. Check ruleset \"{namingValidator.ruleset.name}\" for allowed patterns.", folder);
+                    }
+
                     foreach (var directory in Directory.EnumerateDirectories(path))
                     {
                         // If the directory is being analyzed by ANOTHER ruleset, skip validating this directory by THIS ruleset.
@@ -69,22 +76,31 @@ namespace UnityExtras.Naming.Editor
                             continue;
                         }
 
-                        var assetType = AssetDatabase.GetMainAssetTypeAtPath(assetPath);
+                        if (!ValidateType(AssetDatabase.GetMainAssetTypeAtPath(assetPath), assetPath))
+                        {
+                            var asset = AssetDatabase.LoadMainAssetAtPath(assetPath);
+                            Debug.LogError($"{asset} has incorrect naming. Check ruleset \"{namingValidator.ruleset.name}\" for allowed patterns.", asset);
+                        }
+                    }
+
+                    bool ValidateType(Type assetType, string assetPath)
+                    {
                         while (assetType != null)
                         {
                             if (namingRegexByAssetType.TryGetValue(assetType, out var namingRegex))
                             {
-                                var assetName = assetPath[(assetPath.LastIndexOf('/') + 1)..assetPath.LastIndexOf('.')];
+                                var lastIndexOfDot = assetPath.LastIndexOf('.');
+                                var assetName = assetPath[(assetPath.LastIndexOf('/') + 1)..(lastIndexOfDot == -1 ? assetPath.Length : lastIndexOfDot)];
                                 if (!namingRegex.IsMatch(assetName))
                                 {
-                                    var asset = AssetDatabase.LoadMainAssetAtPath(assetPath);
-                                    Debug.LogError($"Incorrect Naming Detected on {asset}! Please apply the right naming rules when naming your assets. Conflicts with rule ({assetType.FullName})", asset);
-                                    break;
+                                    return false;
                                 }
                             }
 
                             assetType = assetType.BaseType;
                         }
+
+                        return true;
                     }
                 }
             }

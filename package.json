@@ -1,6 +1,6 @@
 {
   "name": "com.unityextras.namingvalidator",
-  "version": "0.2.1-exp",
+  "version": "0.2.2-exp",
   "displayName": "Naming Validator",
   "description": "A naming validator for Unity to help ensure naming conventions are respected.",
   "dependencies": {
