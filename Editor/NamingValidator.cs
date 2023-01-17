@@ -40,13 +40,14 @@ namespace UnityExtras.Naming.Editor
 
                 void EnumerateDirectoriesRecursive(string path)
                 {
-                    if (!Directory.Exists(path))
+                    var directoryInfo = new DirectoryInfo(path);
+                    if (!ValidateInfo(directoryInfo))
                     {
                         return;
                     }
 
                     var folderPath = path.Remove(0, Application.dataPath.Length - "Assets".Length).Replace("\\", "/");
-                    if (!ValidateType(typeof(DefaultAsset), folderPath))
+                    if (!ValidateType(typeof(DefaultAsset), directoryInfo.Name))
                     {
                         var folder = AssetDatabase.LoadMainAssetAtPath(folderPath);
                         Debug.LogError($"{folder} has incorrect naming. Check ruleset \"{namingValidator.ruleset.name}\" for allowed patterns.", folder);
@@ -65,7 +66,13 @@ namespace UnityExtras.Naming.Editor
 
                     foreach (var filePath in Directory.EnumerateFiles(path))
                     {
-                        if (filePath.EndsWith(".meta") || filePath.EndsWith(".prefab"))
+                        var fileInfo = new FileInfo(filePath);
+                        if (!ValidateInfo(fileInfo))
+                        {
+                            continue;
+                        }
+                        if (fileInfo.Extension == ".meta"
+                            || fileInfo.Extension == ".prefab")
                         {
                             continue;
                         }
@@ -76,21 +83,39 @@ namespace UnityExtras.Naming.Editor
                             continue;
                         }
 
-                        if (!ValidateType(AssetDatabase.GetMainAssetTypeAtPath(assetPath), assetPath))
+                        if (!ValidateType(AssetDatabase.GetMainAssetTypeAtPath(assetPath), fileInfo.Name[..^fileInfo.Extension.Length]))
                         {
                             var asset = AssetDatabase.LoadMainAssetAtPath(assetPath);
                             Debug.LogError($"{asset} has incorrect naming. Check ruleset \"{namingValidator.ruleset.name}\" for allowed patterns.", asset);
                         }
                     }
 
-                    bool ValidateType(Type assetType, string assetPath)
+                    bool ValidateInfo(FileSystemInfo info)
+                    {
+                        if (!info.Exists)
+                        {
+                            return false;
+                        }
+
+                        var shortName = info.Name.AsSpan()[..^info.Extension.Length];
+                        if (shortName.StartsWith(".")
+                            || shortName.EndsWith("~")
+                            || shortName == "cvs"
+                            || info.Extension == ".tmp"
+                            || info.Attributes.HasFlag(FileAttributes.Hidden))
+                        {
+                            return false;
+                        }
+
+                        return true;
+                    }
+
+                    bool ValidateType(Type assetType, string assetName)
                     {
                         while (assetType != null)
                         {
                             if (namingRegexByAssetType.TryGetValue(assetType, out var namingRegex))
                             {
-                                var lastIndexOfDot = assetPath.LastIndexOf('.');
-                                var assetName = assetPath[(assetPath.LastIndexOf('/') + 1)..(lastIndexOfDot == -1 ? assetPath.Length : lastIndexOfDot)];
                                 if (!namingRegex.IsMatch(assetName))
                                 {
                                     return false;
