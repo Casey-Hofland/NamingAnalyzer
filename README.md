@@ -11,13 +11,21 @@ Right now the error message just tells you that a string is wrong, but it doesn'
 
 ---
 
+**PROVIDE ONE ERROR LOG THAT LINKS TO A FILE WITH ALL NAMING ERRORS.**
+
+When someone has 30 naming errors, it cloggs the whole console every time you save, making it impossible to find out which errors are actually important. It would be better to log 1 error to the console instead, and create a file inside the logs folder in which people can find all naming errors and provided data (bonus: perhaps this could be a .csv file with tables for clarity).
+
+---
+
 **USE PRESETS CHECKS INSTEAD OF FLAWED TYPE CHECKS**
 
 Currently the validator validates by type, but this has a couple of issues. Some types overlap (e.g. prefabs and models both derive from type "GameObject") and you can't specify naming patterns for assets with certain values (as is the case with Normal Maps, that are of type "Texture" but with their Texture Type set to "Normal map").
 
-Incidentally, this would enclose the gap between adding presets for assets with certain names and applying those presets on import when assets are named correctly.
+Incidentally, this would enclose the gap between adding presets for assets with certain names and applying those presets on import when assets are named correctly (which is existing Unity functionality).
 
 ---
+
+**QOL IMPROVEMENTS**
 
 **Found in Edit > Project Settings > Naming Analyzer**
 - Directory Wildcards (e.g. **/Prototype).
@@ -25,3 +33,6 @@ Incidentally, this would enclose the gap between adding presets for assets with 
 
 **Found in Asset Menu > Create > Naming Ruleset**
 - Create a button next to "pattern" that links you to a regex tester web page with your pattern as input.
+
+**Found in Context Menu**
+- "Obey Naming Validator" and "Ignore Naming Validator" are semantically correct, but confusing. Rename these to better things.
