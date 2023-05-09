@@ -2,6 +2,7 @@
 using System;
 using System.IO;
 using System.Linq;
+using System.Text;
 using System.Text.RegularExpressions;
 using UnityEditor;
 using UnityEngine;
@@ -36,21 +37,27 @@ namespace UnityExtras.Naming.Editor
 
                 var path = Application.dataPath + (string.IsNullOrWhiteSpace(namingValidator.directory) ? string.Empty : $"/{namingValidator.directory}");
 
-                EnumerateDirectoriesRecursive(path);
+                var errorMessage = EnumerateDirectoriesRecursive(path);
+                if (!string.IsNullOrEmpty(errorMessage))
+                {
+                    Debug.LogError("Naming errors. Check this log for details:\n" + errorMessage);
+                }
 
-                void EnumerateDirectoriesRecursive(string path)
+                string? EnumerateDirectoriesRecursive(string path)
                 {
                     var directoryInfo = new DirectoryInfo(path);
                     if (!ValidateInfo(directoryInfo))
                     {
-                        return;
+                        return null;
                     }
 
+                    StringBuilder errorBuilder = new();
                     var folderPath = path.Remove(0, Application.dataPath.Length - "Assets".Length).Replace("\\", "/");
                     if (!ValidateType(typeof(DefaultAsset), directoryInfo.Name))
                     {
                         var folder = AssetDatabase.LoadMainAssetAtPath(folderPath);
-                        Debug.LogError($"{folder} has incorrect naming. Check ruleset \"{namingValidator.ruleset.name}\" for allowed patterns.", folder);
+                        errorBuilder.AppendLine($"{folder} has incorrect naming. Check ruleset \"{namingValidator.ruleset.name}\" for allowed patterns.");
+                        //Debug.LogError($"{folder} has incorrect naming. Check ruleset \"{namingValidator.ruleset.name}\" for allowed patterns.", folder);
                     }
 
                     foreach (var directory in Directory.EnumerateDirectories(path))
@@ -61,7 +68,11 @@ namespace UnityExtras.Naming.Editor
                             break;
                         }
 
-                        EnumerateDirectoriesRecursive(directory);
+                        var errorMessage = EnumerateDirectoriesRecursive(directory);
+                        if (!string.IsNullOrEmpty(errorMessage))
+                        {
+                            errorBuilder.AppendLine(errorMessage);
+                        }
                     }
 
                     foreach (var filePath in Directory.EnumerateFiles(path))
@@ -86,9 +97,12 @@ namespace UnityExtras.Naming.Editor
                         if (!ValidateType(AssetDatabase.GetMainAssetTypeAtPath(assetPath), fileInfo.Name[..^fileInfo.Extension.Length]))
                         {
                             var asset = AssetDatabase.LoadMainAssetAtPath(assetPath);
-                            Debug.LogError($"{asset} has incorrect naming. Check ruleset \"{namingValidator.ruleset.name}\" for allowed patterns.", asset);
+                            errorBuilder.AppendLine($"{asset} has incorrect naming. Check ruleset \"{namingValidator.ruleset.name}\" for allowed patterns.");
+                            //Debug.LogError($"{asset} has incorrect naming. Check ruleset \"{namingValidator.ruleset.name}\" for allowed patterns.", asset);
                         }
                     }
+
+                    return errorBuilder.ToString();
 
                     bool ValidateInfo(FileSystemInfo info)
                     {
